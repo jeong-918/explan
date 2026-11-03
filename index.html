@@ -1,0 +1,666 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>학생부 주제탐구 설계 스튜디오</title>
+<meta name="description" content="진로 계열과 기존 탐구 이력을 바탕으로 2022 개정 교육과정 과목·단원·성취기준에 맞춘 개인별 주제탐구를 설계합니다.">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="./base.css">
+<link rel="stylesheet" href="./style.css?v=4">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true">探</span>
+    <div>
+      <h1 class="brand-title">학생부 주제탐구 설계 스튜디오</h1>
+      <p class="brand-sub">2022 개정 교육과정 · 고교 231과목 · 성취기준 3,124개 내장</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button class="btn btn-ghost" id="btn-sample" type="button">예시 학생 불러오기</button>
+    <label class="btn btn-ghost" for="file-import">입력 불러오기<input type="file" id="file-import" accept="application/json,.json" hidden></label>
+    <button class="btn btn-ghost" id="btn-export" type="button">입력 저장(JSON)</button>
+    <button class="btn btn-ghost danger" id="btn-reset" type="button">새로 시작</button>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="stepper" aria-label="설계 단계">
+    <ol role="list" id="stepper"></ol>
+  </nav>
+
+  <main id="main" tabindex="-1">
+    <!-- STEP 1 -->
+    <section class="step" data-step="1" aria-labelledby="h-step1">
+      <header class="step-head">
+        <p class="eyebrow">STEP 1</p>
+        <h2 id="h-step1">학생 정보와 진로 희망</h2>
+        <p class="lead">학년과 진로 계열을 정하면 이후 단계의 과목 추천과 서사 정리 기준이 정해집니다.</p>
+      </header>
+
+      <div class="card">
+        <div class="grid-3">
+          <label class="field"><span>학생 이름 또는 식별코드</span><input id="s-name" type="text" placeholder="예: 2-3-15 김OO"></label>
+          <div class="field"><span>현재 학년</span>
+            <div class="seg" role="radiogroup" id="s-grade">
+              <button type="button" role="radio" data-v="1">1학년</button>
+              <button type="button" role="radio" data-v="2">2학년</button>
+              <button type="button" role="radio" data-v="3">3학년</button>
+            </div>
+          </div>
+          <label class="field"><span>탐구 적용 시기</span>
+            <select id="s-apply"></select>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3>진로 계열 선택</h3>
+          <p class="hint">프로젝트의 30개 계열 가이드를 기준으로 합니다. 맞는 계열이 없으면 '직접 입력'을 쓰세요.</p>
+        </div>
+        <div class="chips" id="cluster-chips"></div>
+        <div class="field-grid" id="field-grid"></div>
+        <label class="field custom-field"><span>직접 입력 계열·학과군 (선택)</span><input id="s-custom-field" type="text" placeholder="예: 문화재 보존과학"></label>
+      </div>
+
+      <div class="card" id="field-detail" hidden></div>
+
+      <div class="card">
+        <div class="grid-2">
+          <label class="field"><span>진로 희망 상세 (선택)</span><textarea id="s-career" rows="3" placeholder="희망 직업, 진로 동기, 관심을 갖게 된 계기 등"></textarea></label>
+          <label class="field"><span>관심 키워드·피하고 싶은 소재 (선택)</span><textarea id="s-interest" rows="3" placeholder="예: 지역 소멸, 공공데이터 / 피하고 싶은 소재: 출산율 단순 조사"></textarea></label>
+        </div>
+        <label class="field"><span>학교 정보 (선택)</span><input id="s-school" type="text" placeholder="고교 유형, 개설 과목 특이사항, 활용 가능한 도구(파이썬, 엑셀, 실험실 등)"></label>
+      </div>
+      <div class="step-foot"><span></span><button class="btn btn-primary" data-go="2" type="button">다음: 기존 활동 입력</button></div>
+    </section>
+
+    <!-- STEP 2 -->
+    <section class="step" data-step="2" aria-labelledby="h-step2" hidden>
+      <header class="step-head">
+        <p class="eyebrow">STEP 2</p>
+        <h2 id="h-step2">기존 탐구·활동 이력</h2>
+        <p class="lead">이미 수행한 소재는 새 주제에 다시 쓰지 않고, 필요할 때만 '심화 후보'로 발전시켜 제시합니다. 소재·개념·결론을 구체적으로 적을수록 서사 정리가 정확해집니다.</p>
+      </header>
+      <div id="grade1-note" class="callout" hidden>
+        <strong>1학년은 사전 활동 입력을 생략합니다.</strong>
+        <p>진로 희망과 관심 키워드만으로 '출발 서사'를 세우고, 1년 동안 쌓을 기초 역량 중심으로 설계합니다. 중학교 활동이나 관심 계기를 참고로 남기고 싶다면 아래에 적어 주세요.</p>
+        <textarea id="g1-note" rows="3" placeholder="예: 중학교 때 지역 하천 수질 조사 경험, 『OOO』를 읽고 도시 문제에 관심"></textarea>
+      </div>
+      <div id="activity-wrap">
+        <div class="toolbar">
+          <div class="seg" role="radiogroup" id="act-mode" aria-label="정리 방식">
+            <button type="button" role="radio" data-v="subject">과목별 정리</button>
+            <button type="button" role="radio" data-v="grade">학년별 정리</button>
+          </div>
+          <div class="toolbar-right">
+            <span class="count" id="act-count"></span>
+            <button class="btn btn-secondary" id="btn-add-act" type="button">+ 활동 추가</button>
+          </div>
+        </div>
+        <div id="act-list"></div>
+        <details class="card details">
+          <summary>학생부 원문 붙여넣기 (선택)</summary>
+          <p class="hint">세특·창체 원문을 붙여 넣으면 설계 시 함께 참고합니다. 이름 등 개인정보는 지우고 넣어 주세요.</p>
+          <textarea id="record-paste" rows="6" placeholder="[2학년 경제 세특] ..."></textarea>
+        </details>
+      </div>
+      <div class="step-foot"><button class="btn btn-ghost" data-go="1" type="button">이전</button><button class="btn btn-primary" data-go="3" type="button">다음: 과목 선택</button></div>
+    </section>
+
+    <!-- STEP 3 -->
+    <section class="step" data-step="3" aria-labelledby="h-step3" hidden>
+      <header class="step-head">
+        <p class="eyebrow">STEP 3</p>
+        <h2 id="h-step3">탐구 적용 과목과 규칙</h2>
+        <p class="lead">과목을 고르고, 필요하면 단원과 과목별 지시사항을 지정하세요. ★는 선택한 계열 가이드의 참고 과목입니다.</p>
+      </header>
+      <div class="pick-layout">
+        <div class="card browser">
+          <div class="browser-top">
+            <input id="c-search" type="search" placeholder="과목명 또는 성취기준 키워드 검색 (예: 확률, 도시, 빅데이터)">
+            <label class="switch"><input type="checkbox" id="c-fieldonly"><span>계열 참고 과목만</span></label>
+          </div>
+          <div class="chips small" id="group-chips"></div>
+          <div class="chips small" id="cat-chips"></div>
+          <ul role="list" class="course-list" id="course-list"></ul>
+        </div>
+        <div class="card selected-box">
+          <div class="card-head"><h3>선택한 과목 <span class="count" id="sel-count"></span></h3></div>
+          <div id="sel-list"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="grid-2">
+          <label class="field"><span>탐구 규칙·지시사항 (선택)</span><textarea id="r-rules" rows="4" placeholder="예: 보고서 A4 3쪽 이내, 수업 단원과 연계, 설문 금지, 2주 내 수행, 발표 5분"></textarea></label>
+          <div class="stack">
+            <div class="field"><span>과목당 주제 수</span>
+              <div class="stepper-num"><button type="button" id="tc-minus" aria-label="줄이기">−</button><output id="tc-val">3</output><button type="button" id="tc-plus" aria-label="늘리기">+</button></div>
+              <small class="hint">기본 3개: 심화형·확장형·융합형 각 1개 우선</small>
+            </div>
+            <label class="switch"><input type="checkbox" id="r-reuse" checked><span>기존 소재 '심화 후보' 제시 허용 (발전 요소 명시 조건)</span></label>
+          </div>
+        </div>
+      </div>
+      <div class="step-foot"><button class="btn btn-ghost" data-go="2" type="button">이전</button><button class="btn btn-primary" data-go="4" type="button">다음: 주제 설계 시작</button></div>
+    </section>
+
+    <!-- STEP 4 -->
+    <section class="step" data-step="4" aria-labelledby="h-step4" hidden>
+      <header class="step-head">
+        <p class="eyebrow">STEP 4</p>
+        <h2 id="h-step4">주제 설계</h2>
+        <p class="lead">설계 방식을 고르세요. 사실 검증(웹 검색·출처 확인)까지 하려면 프로젝트 채팅 방식을 권장합니다.</p>
+      </header>
+      <div id="check-box"></div>
+      <div class="seg big" role="radiogroup" id="run-mode" aria-label="설계 방식">
+        <button type="button" role="radio" data-v="prompt"><strong>프로젝트 채팅용 요청문</strong><small>API 키 불필요 · 스킬이 검증까지 수행</small></button>
+        <button type="button" role="radio" data-v="api"><strong>AI API로 직접 생성</strong><small>본인 API 키 · 앱 안에서 바로 결과</small></button>
+      </div>
+
+      <div id="mode-prompt">
+        <div class="card">
+          <ol class="howto" role="list">
+            <li><b>1</b>이 프로젝트에서 새 채팅을 엽니다.</li>
+            <li><b>2</b>아래 요청문을 복사해 붙여 넣습니다.</li>
+            <li><b>3</b>프로젝트 스킬이 서사 정리 → 과목별 주제를 제시합니다.</li>
+            <li><b>4</b>개요가 필요한 주제 번호를 답하면 기본 개요를 받습니다.</li>
+          </ol>
+          <div class="out-actions">
+            <button class="btn btn-primary" id="btn-copy" type="button">요청문 복사</button>
+            <button class="btn btn-secondary" id="btn-dl-md" type="button">.md로 저장</button>
+            <span class="status" id="copy-status" role="status"></span>
+          </div>
+          <textarea id="prompt-out" class="mono" rows="18" readonly aria-label="생성된 요청문"></textarea>
+        </div>
+      </div>
+
+      <div id="mode-api" hidden>
+        <div class="card">
+          <div class="grid-3">
+            <label class="field"><span>제공사</span>
+              <select id="api-provider">
+                <option value="openai">OpenAI</option>
+                <option value="anthropic">Anthropic (Claude)</option>
+                <option value="gemini">Google Gemini</option>
+                <option value="compat">OpenAI 호환 (Perplexity 등)</option>
+              </select>
+            </label>
+            <label class="field"><span>모델명</span><input id="api-model" type="text" placeholder="사용 가능한 모델명"></label>
+            <label class="field"><span>API 키</span><input id="api-key" type="password" autocomplete="off" placeholder="이 화면 메모리에만 보관"></label>
+          </div>
+          <label class="field" id="api-base-wrap" hidden><span>Base URL</span><input id="api-base" type="url" placeholder="https://api.perplexity.ai"></label>
+          <p class="hint warn">API 키는 저장·전송되지 않고 이 탭을 닫으면 사라집니다(입력 저장 JSON에도 포함되지 않음). 웹 검색이 없는 모델은 통계·출처를 지어낼 수 있으니, 결과의 사실관계는 반드시 확인하세요. 과목·단원·성취기준 코드는 앱이 내장 DB로 자동 검사합니다.</p>
+          <div class="out-actions">
+            <button class="btn btn-primary" id="btn-run" type="button">설계 생성</button>
+            <button class="btn btn-secondary" id="btn-dl-result" type="button" disabled>결과 .md로 저장</button>
+            <span class="status" id="api-status" role="status"></span>
+          </div>
+        </div>
+        <div id="result"></div>
+      </div>
+      <div class="step-foot"><button class="btn btn-ghost" data-go="3" type="button">이전</button><span></span></div>
+    </section>
+  </main>
+
+  <aside class="summary" aria-label="입력 요약">
+    <h2 class="summary-title">설계 요약</h2>
+    <div id="summary"></div>
+    <p class="summary-foot">과목 구분·단원·성취기준: 교육부 고시 제2022-33호 및 재고시 별책 기반 공개 데이터. 실제 개설 학년은 학교 편성표를 따릅니다.</p>
+  </aside>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<script src="./data.js"></script>
+<script src="./app.js?v=2"></script>
+<script data-pplx-inline-edit>
+(function () {
+  if (window === window.top) return;
+
+  const allowedParentOrigins = ["https://www.perplexity.ai","https://perplexity.ai","https://testing.perplexity.ai","https://staging.perplexity.ai","https://*.preview.i.perplexity.ai","http://perplexity.localhost","http://localhost:1420","http://127.0.0.1:1420","http://localhost:3000","http://127.0.0.1:3000","http://localhost:5173","http://127.0.0.1:5173"];
+  const MAX_FONT_BYTES = 500 * 1024;
+  const MAX_TOTAL_FONT_BYTES = 2 * 1024 * 1024;
+  const DEFAULT_LINE_HEIGHT = 16;
+  let scrollForwarding = false;
+  let scrollRaf = 0;
+  let trustedTopOrigin = null;
+
+  // Allow entries like "https://*.preview.i.perplexity.ai" — the wildcard
+  // matches a single DNS label (no dots), so "https://*.foo" cannot stretch
+  // across multiple labels.
+  function matchesAllowedOrigin(origin) {
+    if (!origin) return false;
+    for (const entry of allowedParentOrigins) {
+      if (!entry.includes("*")) {
+        if (entry === origin) return true;
+        continue;
+      }
+      const pattern = new RegExp(
+        "^" +
+          entry.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^.]+") +
+          "$",
+      );
+      if (pattern.test(origin)) return true;
+    }
+    return false;
+  }
+
+  // Trust decision: when the sender is same-origin-visible (event.origin is a
+  // real origin like https://www.perplexity.ai) we trust event.origin directly.
+  // When event.origin is "null" (opaque broker srcdoc), we fall back to the
+  // broker's stamped `parentOrigin` to identify the top window. The fallback
+  // is claim-only — we rely on the browser's native `targetOrigin` enforcement
+  // on the response path (see postToTrustedTop) to ensure replies can't be
+  // delivered to anyone but the actual top window of that claimed origin.
+  function getTrustedParentOrigin(event) {
+    const forwardedParentOrigin =
+      typeof event.data.parentOrigin === "string" ? event.data.parentOrigin : null;
+    const parentOrigin = event.origin === "null" ? forwardedParentOrigin : event.origin;
+    return matchesAllowedOrigin(parentOrigin) ? parentOrigin : null;
+  }
+
+  // All responses go to window.top with targetOrigin = the allowlisted origin.
+  // An attacker that iframes us inside their own null-origin broker can claim
+  // any parentOrigin they like, but the browser will drop the reply whenever
+  // the real top's origin doesn't match — so the screenshot never leaves.
+  function postToTrustedTop(message) {
+    if (!trustedTopOrigin) return;
+    try {
+      window.top.postMessage(message, trustedTopOrigin);
+    } catch (_error) {}
+  }
+
+  const PICK_CAPABILITIES = ["pick"];
+  const PICK_CHAIN_LENGTH = 4;
+  const PICK_MAX_TEXT_CHARS = 120;
+  const PICK_MAX_HTML_CHARS = 300;
+
+  function truncate(value, maxChars) {
+    return value.length > maxChars ? value.slice(0, maxChars - 1) + "…" : value;
+  }
+
+  function isPickableElement(element) {
+    return (
+      element instanceof Element &&
+      element !== document.documentElement &&
+      element !== document.body
+    );
+  }
+
+  function resolvePickTarget(x, y) {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    const element = document.elementFromPoint(x, y);
+    return isPickableElement(element) ? element.closest("svg") || element : null;
+  }
+
+  function pickLabel(element) {
+    if (element.id) return element.localName + "#" + element.id;
+    return [element.localName].concat(Array.from(element.classList).slice(0, 2)).join(".");
+  }
+
+  // Only attributes that help find the element in source. data-* values and URL
+  // query strings or fragments can carry tokens.
+  const PICK_ATTRIBUTES = new Set([
+    "id",
+    "class",
+    "name",
+    "type",
+    "role",
+    "alt",
+    "aria-label",
+    "href",
+    "src",
+  ]);
+
+  function pickAttributeValue(attribute) {
+    return attribute.name === "href" || attribute.name === "src"
+      ? attribute.value.split(/[?#]/)[0]
+      : attribute.value;
+  }
+
+  function describePickElement(element) {
+    const chain = [];
+    for (
+      let current = element;
+      isPickableElement(current) && chain.length < PICK_CHAIN_LENGTH;
+      current = current.parentElement
+    ) {
+      chain.unshift(current);
+    }
+    const attributes = Array.from(element.attributes)
+      .filter((attribute) => PICK_ATTRIBUTES.has(attribute.name))
+      .map((attribute) => ` ${attribute.name}="${pickAttributeValue(attribute).replace(/"/g, "&quot;")}"`)
+      .join("");
+    const text = (element.innerText || element.textContent || "").replace(/\s+/g, " ").trim();
+    return {
+      chain: chain.map(pickLabel),
+      html: truncate(`<${element.localName}${attributes}>`, PICK_MAX_HTML_CHARS),
+      text: text ? truncate(text, PICK_MAX_TEXT_CHARS) : undefined,
+    };
+  }
+
+  // Hover asks once per frame, and innerText on a large section forces layout,
+  // so only the rect is re-read while the pointer stays on the same element.
+  // Clicks ask for fresh details since the page may have changed the element.
+  let lastPick = null;
+
+  function describePickTarget(element, fresh) {
+    if (fresh || lastPick?.element !== element) {
+      lastPick = { element, details: describePickElement(element) };
+    }
+    const rect = element.getBoundingClientRect();
+    return {
+      rect: { x: rect.left, y: rect.top, width: rect.width, height: rect.height },
+      ...lastPick.details,
+    };
+  }
+
+  function inlineAll(original, clone) {
+    if (original.nodeType !== 1 || clone.nodeType !== 1) return;
+
+    try {
+      const computedStyle = getComputedStyle(original);
+      // cssText on a computed style is the serialized declaration in modern
+      // Chromium/Safari — a single read beats enumerating ~400 longhand
+      // properties. Firefox returns "" here, so we fall back on empty.
+      const serialized = computedStyle.cssText;
+      if (serialized) {
+        clone.style.cssText = serialized;
+      } else {
+        const parts = new Array(computedStyle.length);
+        for (let index = 0; index < computedStyle.length; index += 1) {
+          const property = computedStyle[index];
+          parts[index] = `${property}:${computedStyle.getPropertyValue(property)};`;
+        }
+        clone.style.cssText = parts.join("");
+      }
+    } catch (_error) {}
+
+    const originalChildren = original.children;
+    const clonedChildren = clone.children;
+    for (
+      let index = 0;
+      index < originalChildren.length && index < clonedChildren.length;
+      index += 1
+    ) {
+      inlineAll(originalChildren[index], clonedChildren[index]);
+    }
+  }
+
+  function extractFontUrl(srcValue) {
+    const matches = [
+      ...srcValue.matchAll(
+        /url\(["']?([^"')]+)["']?\)(?:\s*format\(["']?([^"')]+)["']?\))?/gi,
+      ),
+    ];
+    if (matches.length === 0) return null;
+    const woff2 = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff2"));
+    if (woff2) return woff2[1];
+    const woff = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff"));
+    if (woff) return woff[1];
+    return matches[0][1];
+  }
+
+  // Cache resolved font URL -> data URI across captures. Fonts on a page
+  // essentially never change, and a batch run emits multiple captures back to
+  // back — without this we'd refetch + re-base64 every time.
+  const fontDataUriCache = new Map();
+  const SRC_DECLARATION_RE = /src\s*:\s*[^;}]+/i;
+
+  async function fetchAsDataUri(url) {
+    if (fontDataUriCache.has(url)) return fontDataUriCache.get(url);
+    let dataUri = null;
+    try {
+      const response = await fetch(url, { mode: "cors", credentials: "omit" });
+      if (response.ok) {
+        const blob = await response.blob();
+        if (blob.size <= MAX_FONT_BYTES) {
+          dataUri = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () =>
+              resolve(typeof reader.result === "string" ? reader.result : null);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+          });
+        }
+      }
+    } catch (_error) {
+      dataUri = null;
+    }
+    fontDataUriCache.set(url, dataUri);
+    return dataUri;
+  }
+
+  function collectFontFaceRuleTexts() {
+    const rules = [];
+    for (const sheet of document.styleSheets) {
+      let cssRules;
+      try {
+        cssRules = sheet.cssRules;
+      } catch (_error) {
+        continue;
+      }
+      if (!cssRules) continue;
+      for (const rule of cssRules) {
+        const cssText = rule.cssText || "";
+        if (cssText.startsWith("@font-face")) rules.push(cssText);
+      }
+    }
+    return rules;
+  }
+
+  async function buildInlinedFontCss() {
+    const ruleTexts = collectFontFaceRuleTexts();
+    if (ruleTexts.length === 0) return null;
+
+    const resolved = ruleTexts.map((cssText) => {
+      if (!SRC_DECLARATION_RE.test(cssText)) return null;
+      const srcMatch = cssText.match(/src\s*:\s*([^;}]+)[;}]/i);
+      if (!srcMatch) return null;
+      const url = extractFontUrl(srcMatch[1]);
+      if (!url) return null;
+      try {
+        return { cssText, url: new URL(url, document.baseURI).href };
+      } catch (_error) {
+        return null;
+      }
+    });
+
+    const dataUris = await Promise.all(
+      resolved.map((entry) => (entry ? fetchAsDataUri(entry.url) : Promise.resolve(null))),
+    );
+
+    const inlined = [];
+    let totalBytes = 0;
+    for (let index = 0; index < resolved.length; index += 1) {
+      const entry = resolved[index];
+      const dataUri = dataUris[index];
+      if (!entry || !dataUri) continue;
+      const approxBytes = dataUri.length * 0.75;
+      if (totalBytes + approxBytes > MAX_TOTAL_FONT_BYTES) break;
+      totalBytes += approxBytes;
+      inlined.push(entry.cssText.replace(SRC_DECLARATION_RE, `src: url("${dataUri}")`));
+    }
+    return inlined.length > 0 ? inlined.join("\n") : null;
+  }
+
+  function stripExternal(clone) {
+    const images = clone.querySelectorAll("img");
+    for (let index = 0; index < images.length; index += 1) {
+      const src = images[index].getAttribute("src");
+      if (src && !src.startsWith("data:")) images[index].removeAttribute("src");
+    }
+
+    const elements = clone.querySelectorAll("*");
+    for (let index = 0; index < elements.length; index += 1) {
+      const style = elements[index].style.cssText;
+      if (style && style.includes("url(")) {
+        elements[index].style.cssText = style.replace(
+          /url\(["']?(?!data:)[^)"']*["']?\)/gi,
+          "none",
+        );
+      }
+    }
+  }
+
+  function emitScroll() {
+    scrollRaf = 0;
+    if (!scrollForwarding) return;
+    postToTrustedTop({
+      type: "INLINE_EDIT_SCROLL",
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      capabilities: PICK_CAPABILITIES,
+    });
+  }
+
+  window.addEventListener(
+    "scroll",
+    function () {
+      if (!scrollForwarding || scrollRaf) return;
+      scrollRaf = requestAnimationFrame(emitScroll);
+    },
+    { passive: true, capture: true },
+  );
+
+  async function handleCaptureRequest(event) {
+    const requestId = event.data.requestId;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    function postResult(dataUrl) {
+      postToTrustedTop({
+        type: "INLINE_EDIT_SCREENSHOT_RESULT",
+        requestId,
+        dataUrl,
+        scrollX,
+        scrollY,
+      });
+    }
+
+    try {
+      // Wait for any pending web fonts to resolve so both inline metrics and
+      // the @font-face inlining below see the same loaded faces.
+      if (document.fonts && document.fonts.ready) {
+        try {
+          await document.fonts.ready;
+        } catch (_error) {}
+      }
+
+      const clone = document.documentElement.cloneNode(true);
+      inlineAll(document.documentElement, clone);
+
+      const removedNodes = clone.querySelectorAll("script,link[rel=\"stylesheet\"],style");
+      for (let index = 0; index < removedNodes.length; index += 1) {
+        removedNodes[index].remove();
+      }
+
+      stripExternal(clone);
+
+      // Re-embed web fonts as data-URI @font-face rules so the SVG rasterizer
+      // can resolve them — external font URLs aren't fetched during
+      // foreignObject rendering, which would otherwise force a fallback face
+      // and change text metrics.
+      const inlinedFontCss = await buildInlinedFontCss();
+      if (inlinedFontCss) {
+        const styleEl = document.createElement("style");
+        styleEl.textContent = inlinedFontCss;
+        const head = clone.querySelector("head");
+        if (head) head.appendChild(styleEl);
+        else clone.insertBefore(styleEl, clone.firstChild);
+      }
+
+      const html = new XMLSerializer().serializeToString(clone);
+      const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">` +
+        '<foreignObject width="100%" height="100%">' +
+        `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;height:${height}px;overflow:hidden">` +
+        `<div style="position:relative;left:-${scrollX}px;top:-${scrollY}px">` +
+        html +
+        "</div></div></foreignObject></svg>";
+      const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      const image = new Image();
+      image.onload = function () {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(image, 0, 0);
+        postResult(canvas.toDataURL("image/png"));
+      };
+      image.onerror = function () {
+        postResult(null);
+      };
+      image.src = svgUrl;
+    } catch (_error) {
+      postResult(null);
+    }
+  }
+
+  window.addEventListener("message", function (event) {
+    if (!event.data) return;
+    // Only accept messages from the direct parent frame. Blocks sibling /
+    // unrelated-window postMessage senders that could otherwise reach us.
+    if (event.source !== window.parent) return;
+
+    const trustedParentOrigin = getTrustedParentOrigin(event);
+    if (!trustedParentOrigin) return;
+    trustedTopOrigin = trustedParentOrigin;
+
+    if (event.data.type === "INLINE_EDIT_PICK") {
+      const element = resolvePickTarget(event.data.x, event.data.y);
+      postToTrustedTop({
+        type: "INLINE_EDIT_PICK_RESULT",
+        seq: event.data.seq,
+        target: element ? describePickTarget(element, event.data.fresh === true) : null,
+      });
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_START") {
+      scrollForwarding = true;
+      emitScroll();
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_STOP") {
+      scrollForwarding = false;
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      scrollRaf = 0;
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_BY") {
+      const { deltaX, deltaY, deltaMode } = event.data;
+      if (!scrollForwarding || !Number.isFinite(deltaX) || !Number.isFinite(deltaY)) return;
+      if (deltaMode !== 0 && deltaMode !== 1 && deltaMode !== 2) return;
+      const lineHeight =
+        parseFloat(getComputedStyle(document.documentElement).lineHeight) || DEFAULT_LINE_HEIGHT;
+      const scaleX = deltaMode === 1 ? lineHeight : deltaMode === 2 ? window.innerWidth : 1;
+      const scaleY = deltaMode === 1 ? lineHeight : deltaMode === 2 ? window.innerHeight : 1;
+      // The selection overlay receives the wheel event instead of this iframe.
+      // Instant scrolling preserves trackpad deltas even on smooth-scroll sites.
+      window.scrollBy({ left: deltaX * scaleX, top: deltaY * scaleY, behavior: "instant" });
+      emitScroll();
+      return;
+    }
+
+    if (event.data.type !== "INLINE_EDIT_CAPTURE_REQUEST") return;
+
+    handleCaptureRequest(event);
+  });
+})();
+
+
+</script></body>
+</html>
